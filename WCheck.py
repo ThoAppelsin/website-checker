@@ -4,6 +4,7 @@ import shutil
 import sys
 import datetime
 import time
+import winsound
 from itertools import zip_longest
 
 # Retrieve terminal dimensions
@@ -11,12 +12,13 @@ termcols, termrows = shutil.get_terminal_size()
 
 
 def PlayNote(note, octave, duration):
-	# TODO
-	pass
+    key = 3 + 12 * (4 + octave) + note
+    fre = int(2 ** ((key - 49) / 12) * 440)
+
+    winsound.Beep(fre, duration)
 
 def Alarm1():
-	# TODO
-	pass
+    PlayNote(1, 1, 500)
 
 def QueryForChange(url, alert=True):
     waitsecs = 3
@@ -161,7 +163,7 @@ websitechoice = offerthelist(
     default=1)
 
 if websitechoice == len(websiteoffers) - 1:
-    url = input()
+    url = input('Specify the website to query: ')
 else:
     url = websiteoffers[websitechoice]
 
