@@ -8,6 +8,7 @@ from datetime import datetime
 import time
 from itertools import zip_longest
 import json
+from random import random
 
 if 'TELEGRAM_CHAT_ID' in os.environ:
     whomstd = os.environ['TELEGRAM_CHAT_ID']
@@ -55,8 +56,8 @@ def AlarmTelegram(website):
             params = {'chat_id': whomstd, 'text': 'It has changed! ' + website})
 
 def QueryForChange(website, alert=True):
-    waitsecs = 60 * 5
-    dotwaitsecs = 5
+    basewaitsecs = 60 * 15
+    dotwaitsecs = 15
 
     def GetContent():
         while True:
@@ -105,6 +106,8 @@ def QueryForChange(website, alert=True):
         sys.stdout.write('\r' + ' ' * (termcols - 1))
         sys.stdout.write('\r' + timeinfostr + ' ')
         sys.stdout.flush()
+
+        waitsecs = int(basewaitsecs * (1 + random()))
 
         for _ in range(int(waitsecs / dotwaitsecs)):
             time.sleep(dotwaitsecs)
