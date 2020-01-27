@@ -7,9 +7,23 @@ import os
 from datetime import datetime
 import time
 from itertools import zip_longest
+import json
 
-telegramToken = ""
-whomstd = 0
+if 'TELEGRAM_CHAT_ID' in os.environ:
+    whomstd = os.environ['TELEGRAM_CHAT_ID']
+elif len(sys.argv) > 2:
+    whomstd = sys.argv[2]
+else:
+    print("too few arguments and TELEGRAM_CHAT_ID not set")
+    quit()
+
+if 'TELEGRAM_TOKEN' in os.environ:
+    telegramToken = os.environ['TELEGRAM_TOKEN']
+elif len(sys.argv) > 1:
+    telegramToken = sys.argv[1]
+else:
+    print("too few arguments and TELEGRAM_TOKEN not set")
+    quit()
 
 def WinSoundPlayer(freq, duration):
     winsound.Beep(freq, duration)
@@ -38,7 +52,7 @@ def Alarm1():
 
 def AlarmTelegram(website):
     requests.post(url = 'https://api.telegram.org/bot' + telegramToken + '/sendMessage',
-            params = {'chat_id' : whomstd, 'text' : 'It has changed! ' + website})
+            params = {'chat_id': whomstd, 'text': 'It has changed! ' + website})
 
 def QueryForChange(website, alert=True):
     waitsecs = 60 * 5
@@ -200,11 +214,14 @@ websitechoice = offerthelist(
     default=1)
 
 if websitechoice == len(websiteoffers) - 1:
-    website = (
-            input('Specify the website to query: '),
-            input('Specify the BeautifulSoup query to search: '),
-            int(input('Specify the index: '))
-            )
+    websiteurl = input('Specify the website to query: ')
+    bsquery = input('Specify the BeautifulSoup query to search: ')
+    try:
+        bsquery = json.loads(bsquery)
+    except:
+        bsquery = {"name": bsquery}
+    index = int(input('Specify the index: '))
+    website = (websiteurl, bsquery, index)
 else:
     website = websiteoffers[websitechoice]
 
