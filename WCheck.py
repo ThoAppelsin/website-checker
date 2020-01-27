@@ -1,11 +1,27 @@
 import requests
+from bs4 import BeautifulSoup
 import math
 import shutil
 import sys
-import datetime
+import os
+from datetime import datetime
 import time
-import winsound
 from itertools import zip_longest
+
+telegramToken = ""
+whomstd = 0
+
+def WinSoundPlayer(freq, duration):
+    winsound.Beep(freq, duration)
+
+def FallbackSoundPlayer(freq, duration):
+    pass
+
+if sys.platform == "win32":
+    import winsound
+    SoundPlayer = WinSoundPlayer
+else:
+    SoundPlayer = FallbackSoundPlayer
 
 # Retrieve terminal dimensions
 termcols, termrows = shutil.get_terminal_size()
@@ -15,17 +31,32 @@ def PlayNote(note, octave, duration):
     key = 3 + 12 * (4 + octave) + note
     fre = int(2 ** ((key - 49) / 12) * 440)
 
-    winsound.Beep(fre, duration)
+    SoundPlayer(fre, duration)
 
 def Alarm1():
     PlayNote(1, 1, 500)
 
-def QueryForChange(url, alert=True):
-    waitsecs = 3
-    dotwaitsecs = 0.5
+def AlarmTelegram(website):
+    requests.post(url = 'https://api.telegram.org/bot' + telegramToken + '/sendMessage',
+            params = {'chat_id' : whomstd, 'text' : 'It has changed! ' + website})
 
-    initialcontent = requests.get(url).text
-    initialtime = datetime.datetime.now()
+def QueryForChange(website, alert=True):
+    waitsecs = 60 * 5
+    dotwaitsecs = 5
+
+    def GetContent():
+        while True:
+            try:
+                requesttext = requests.get(website[0]).text
+                soup = BeautifulSoup(requesttext, 'html.parser')
+                matches = soup(**website[1])
+                theobject = matches[website[2]]
+
+                return (theobject.text, datetime.now())
+            except:
+                pass
+
+    initialcontent, initialtime = GetContent()
     initialtstr = initialtime.strftime('%d %b %Y %H:%M:%S')
 
     latestcontent = None
@@ -40,15 +71,20 @@ def QueryForChange(url, alert=True):
         nonlocal elapsedtstr
         nonlocal timeinfostr
 
-        latestcontent = requests.get(url).text
-        elapsedtime = datetime.datetime.now() - initialtime
+        latestcontent, latesttime = GetContent()
+        elapsedtime = latesttime - initialtime
         elapsedtstr = str(elapsedtime).split('.')[0]
 
         timeinfostr = 'Elapsed:\t' + elapsedtstr
 
         return latestcontent == initialcontent
 
-    print('Querying:\t' + url)
+    if sys.platform == 'win32':
+        os.system('cls')
+    else:
+        os.system('clear')
+
+    print('Querying:\t' + str(website))
     print('Started:\t' + initialtstr)
 
     while QueryLatest():
@@ -67,8 +103,7 @@ def QueryForChange(url, alert=True):
     print('The page has changed!')
 
     if alert:
-        Alarm1()
-
+        AlarmTelegram(website[0])
 
 ###
 # Definitions of the offering functions
@@ -100,6 +135,7 @@ def printlist(offerlist, columncount):
 
 
 def offerthelist(question, offerlist, columncount=1, default=False):
+    offerlist = [str(x) for x in offerlist]
     printlist(offerlist, columncount)
 
     if default:
@@ -152,7 +188,8 @@ def offeryesno(question, default="yes"):
 print('Welcome to the Website Querying Machine!')
 
 websiteoffers = [
-    'http://www.math.boun.edu.tr/courses/course/view.php?id=7'
+        ('http://www.math.boun.edu.tr/courses/course/view.php?id=7', {'name':'body'}, 0),
+        ('https://www.tubitak.gov.tr/tr/destekler/bilimsel-etkinlik/etkinliklere-katilma-destekleri/icerik-2224-a-yurt-disi-bilimsel-etkinliklere-katilimi-destekleme-programi', {'id':'section-content'}, 0)
 ]
 
 websiteoffers.append('... or specify other')
@@ -163,8 +200,12 @@ websitechoice = offerthelist(
     default=1)
 
 if websitechoice == len(websiteoffers) - 1:
-    url = input('Specify the website to query: ')
+    website = (
+            input('Specify the website to query: '),
+            input('Specify the BeautifulSoup query to search: '),
+            int(input('Specify the index: '))
+            )
 else:
-    url = websiteoffers[websitechoice]
+    website = websiteoffers[websitechoice]
 
-QueryForChange(url)
+QueryForChange(website)
