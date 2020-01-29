@@ -110,9 +110,9 @@ def QueryForChange(website, alert=True):
         waitsecs = int(basewaitsecs * (1 + random()))
         dotwaitsecs = waitsecs / dots
 
-        for i in range(dots):
+        for i in range(1, dots + 1):
             time.sleep(dotwaitsecs)
-            sys.stdout.write('.' if i % 10 else i)
+            sys.stdout.write('.' if i % 10 else str(i))
             sys.stdout.flush()
 
         time.sleep(waitsecs % dotwaitsecs)
