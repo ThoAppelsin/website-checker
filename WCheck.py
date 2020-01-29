@@ -57,7 +57,7 @@ def AlarmTelegram(website):
 
 def QueryForChange(website, alert=True):
     basewaitsecs = 60 * 15
-    dotwaitsecs = 15
+    dots = 100
 
     def GetContent():
         while True:
@@ -108,10 +108,11 @@ def QueryForChange(website, alert=True):
         sys.stdout.flush()
 
         waitsecs = int(basewaitsecs * (1 + random()))
+        dotwaitsecs = waitsecs / dots
 
-        for _ in range(int(waitsecs / dotwaitsecs)):
+        for i in range(dots):
             time.sleep(dotwaitsecs)
-            sys.stdout.write('.')
+            sys.stdout.write('.' if i % 10 else i)
             sys.stdout.flush()
 
         time.sleep(waitsecs % dotwaitsecs)
