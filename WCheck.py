@@ -61,7 +61,7 @@ def QueryForChange(website, alert=True):
     percticks = 15
 
     def GetContent():
-        while True:
+        for i in range(1, 11):
             try:
                 requesttext = requests.get(website[0]).text
                 soup = BeautifulSoup(requesttext, 'html.parser')
@@ -70,7 +70,12 @@ def QueryForChange(website, alert=True):
 
                 return (theobject.text, datetime.now())
             except:
+                sys.stdout.write(f" failed {i}/10")
+                sys.stdout.flush()
+                time.sleep(i)
                 pass
+        AlarmTelegram("An error occurred")
+        exit()
 
     initialcontent, initialtime = GetContent()
     initialtstr = initialtime.strftime('%d %b %Y %H:%M:%S')
@@ -228,12 +233,13 @@ if websitechoice == len(websiteoffers) - 1:
     websiteurl = input('Specify the website to query: ')
     bsquery = input('Specify the BeautifulSoup query to search: ')
     try:
-        bsquery = json.loads(bsquery)
+        bsquery = json.loads(bsquery.replace("'", '"'))
     except:
         bsquery = {"name": bsquery}
     index = int(input('Specify the index: '))
     website = (websiteurl, bsquery, index)
 else:
     website = websiteoffers[websitechoice]
+print(website)
 
 QueryForChange(website)
