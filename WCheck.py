@@ -70,7 +70,7 @@ def QueryForChange(website, alert=True):
 
                 return (theobject.text, datetime.now())
             except:
-                sys.stdout.write(f" failed {i}/10")
+                sys.stdout.write(" failed " + i + "/10")
                 sys.stdout.flush()
                 time.sleep(i)
                 pass
