@@ -56,24 +56,25 @@ def AlarmTelegram(website):
             params = {'chat_id': whomstd, 'text': 'It has changed! ' + website})
 
 def QueryForChange(website, alert=True):
-    basewaitsecs = 60 * 15
     dots = 50
-    percticks = 15
+    percticks = 11
+    def WaitSecs():
+        return int(60 * (2 + 3 * random()))
 
     def GetContent():
         for i in range(1, 11):
             try:
                 requesttext = requests.get(website[0]).text
                 soup = BeautifulSoup(requesttext, 'html.parser')
-                matches = soup(**website[1])
+                matches = soup.select(website[1])
                 theobject = matches[website[2]]
-
+    
                 return (theobject.text, datetime.now())
             except:
-                sys.stdout.write(" failed " + i + "/10")
+                sys.stdout.write(" failed " + str(i) + "/10")
                 sys.stdout.flush()
                 time.sleep(i)
-                pass
+                continue
         AlarmTelegram("An error occurred")
         exit()
 
@@ -113,7 +114,7 @@ def QueryForChange(website, alert=True):
         sys.stdout.write('\r' + timeinfostr + ' ')
         sys.stdout.flush()
 
-        waitsecs = int(basewaitsecs * (1 + random()))
+        waitsecs = WaitSecs()
         dotwaitsecs = waitsecs / dots
         percdone = 0
 
@@ -218,8 +219,11 @@ def offeryesno(question, default="yes"):
 print('Welcome to the Website Querying Machine!')
 
 websiteoffers = [
-        ('http://www.math.boun.edu.tr/courses/course/view.php?id=7', {'name':'body'}, 0),
-        ('https://www.tubitak.gov.tr/tr/destekler/bilimsel-etkinlik/etkinliklere-katilma-destekleri/icerik-2224-a-yurt-disi-bilimsel-etkinliklere-katilimi-destekleme-programi', {'id':'section-content'}, 0)
+        ('http://www.math.boun.edu.tr/courses/course/view.php?id=7', "body", 0, 4, 6),
+        ('https://www.tubitak.gov.tr/tr/destekler/bilimsel-etkinlik/etkinliklere-katilma-destekleri/icerik-2224-a-yurt-disi-bilimsel-etkinliklere-katilimi-destekleme-programi', "#section-content", 0, 4, 6),
+        ('https://www.amazon.com.tr/gp/product/B07VYZL7HK', "#sellerProfileTriggerId", 0, 10, 30),
+        ('https://www.amazon.com.tr/gp/offer-listing/B07VYZL7HK', "#olpOfferList", 0, 7, 15),
+        ('https://apgecommerce.com/track_OrderNo=AP10891161', "#wrapper table", 0, 7, 15)
 ]
 
 websiteoffers.append('... or specify other')
